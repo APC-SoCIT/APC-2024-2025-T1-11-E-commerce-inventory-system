@@ -69,3 +69,7 @@ def preorder(request):
         form = PreOrderForm()
     return render(request, 'accounts/preorder.html', {'form': form})
 
+@login_required
+def newhome(request):
+    return render(request, 'accounts/newhome.html')
+

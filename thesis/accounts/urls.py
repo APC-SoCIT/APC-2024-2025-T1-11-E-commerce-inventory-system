@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register, login_view, logout_view, profile
+from .views import register, login_view, logout_view, profile, newhome
 from django.shortcuts import render
 from . import views
 
@@ -12,4 +12,5 @@ urlpatterns = [
     path('profile/', profile, name='profile'),
     path('loginfailed/', lambda request: render(request, 'accounts/login_failed.html'), name='loginfailed'),
     path('preorder/', views.preorder, name='preorder'),
+    path('newhome/', newhome, name='newhome'),
 ]
