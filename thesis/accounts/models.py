@@ -16,3 +16,4 @@ class PreOrder(models.Model):
 
     def __str__(self):
         return f"PreOrder by {self.user.username} on {self.created_at}"
+        
