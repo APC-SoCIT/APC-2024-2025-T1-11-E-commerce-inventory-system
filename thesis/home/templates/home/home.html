@@ -242,6 +242,21 @@
             <p>With our 2D configurator, you can easily design<br>professional-quality sportswear.</p>
             <button class="btn black" onclick="location.href='{% url 'create' %}'">Design sportswear now</button>
             <button class="btn white">Open 2D configurator</button>
+
+            <li><a href="#" onclick="openGallery()">Gallery</a></li>
+
+            <section id="gallery" style="display: none; text-align: center; padding: 20px;">
+    <h2>Product Gallery</h2>
+    <div id="gallery-container">
+        <img src="{% static 'images/g1.png' %}" alt="Gallery Image 1">
+        <img src="{% static 'images/g2.png' %}" alt="Gallery Image 2">
+        <img src="{% static 'images/g3.png' %}" alt="Gallery Image 3">
+        <img src="{% static 'images/g4.png' %}" alt="Gallery Image 4">
+        <img src="{% static 'images/g5.png' %}" alt="Gallery Image 5">
+        <img src="{% static 'images/g6.png' %}" alt="Gallery Image 6">
+    </div>
+</section>
+
         </div>
     </section>
     <script src="{% static 'js/java.js' %}"></script>
