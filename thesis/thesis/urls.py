@@ -21,7 +21,8 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('members/', include('members.urls')),
     path('admin/', admin.site.urls),
-    path('', RedirectView.as_view(url='/accounts/login', permanent=False)),
+    path('', RedirectView.as_view(url='/accounts/login', permanent=False)),  # Redirect root URL to login
     path('inventory/', include('inventory.urls')),
-    path('accounts/', include('accounts.urls')),  # Add this line
+    path('accounts/', include('accounts.urls')), 
+    path('home/', include('home.urls')),  # Add this line
 ]
