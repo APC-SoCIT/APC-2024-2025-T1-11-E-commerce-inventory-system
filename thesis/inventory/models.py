@@ -1,16 +1,15 @@
 from django.db import models
 
 class Product(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
     description = models.TextField()
-    quantity = models.PositiveIntegerField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    image = models.ImageField(upload_to='products/', default='products/default.png')
 
     def __str__(self):
         return self.name
 
-
-class Order(models.Model):  # Make sure this class exists
+class Order(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('shipped', 'Shipped'),
@@ -25,4 +24,4 @@ class Order(models.Model):  # Make sure this class exists
     order_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Order #{self.id} - {self.product.name} ({self.customer_name})"
+        return f"{self.customer_name} - {self.product.name}"
