@@ -1,0 +1,52 @@
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Edit, Save, Trash } from "lucide-react";
+
+export default function CustomerAccount() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [user, setUser] = useState({
+    name: "John Doe",
+    email: "johndoe@example.com",
+    phone: "123-456-7890",
+    password: "********",
+    address: "123 Main St, City, Country"
+  });
+
+  const handleEdit = () => setIsEditing(!isEditing);
+  const handleChange = (e) => {
+    setUser({ ...user, [e.target.name]: e.target.value });
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <Card>
+        <CardContent className="p-4 space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-bold">Account Details</h2>
+          </div>
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input name="name" value={user.name} onChange={handleChange} disabled={!isEditing} />
+            <Label>Email</Label>
+            <Input name="email" value={user.email} onChange={handleChange} disabled={!isEditing} />
+            <Label>Phone</Label>
+            <Input name="phone" value={user.phone} onChange={handleChange} disabled={!isEditing} />
+            <Label>Password</Label>
+            <Input name="password" type="password" value={user.password} onChange={handleChange} disabled={!isEditing} />
+            <Label>Address</Label>
+            <Input name="address" value={user.address} onChange={handleChange} disabled={!isEditing} />
+          </div>
+          <div className="flex justify-between mt-4">
+            <Button variant="destructive"><Trash className="w-4 h-4 mr-2" /> Delete Account</Button>
+            <Button onClick={handleEdit} variant="primary">
+              {isEditing ? <><Save className="w-4 h-4 mr-2" /> Save Changes</> : <><Edit className="w-4 h-4 mr-2" /> Modify Account</>}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
