@@ -562,3 +562,6 @@ def contactus_view(request):
 
 def create(request):
     return render(request, 'ecom/create.html')
+
+def home(request):
+    return render(request, 'ecom/home.html')
