@@ -56,6 +56,7 @@ urlpatterns = [
     path('payment-success', views.payment_success_view,name='payment-success'),
     path('create', views.create,name='create'),
     path('home', views.home,name='home'),
+    path('view_customer', views.view_customer_view, name='view_customer'),
 
 
 ]

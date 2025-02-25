@@ -1,4 +1,4 @@
-from django.shortcuts import render,redirect,reverse
+from django.shortcuts import render,redirect,reverse,get_object_or_404
 from . import forms,models
 from django.http import HttpResponseRedirect,HttpResponse
 from django.core.mail import send_mail
@@ -6,6 +6,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.contrib import messages
 from django.conf import settings
+from .models import Customer
 
 def home_view(request):
     products=models.Product.objects.all()
@@ -92,8 +93,21 @@ def admin_dashboard_view(request):
 # admin view customer table
 @login_required(login_url='adminlogin')
 def view_customer_view(request):
-    customers=models.Customer.objects.all()
-    return render(request,'ecom/view_customer.html',{'customers':customers})
+    customers = Customer.objects.all()
+    
+    # Prepare customer data with profile_pic_url
+    customer_data = []
+    for customer in customers:
+        profile_pic_url = customer.profile_pic.url if customer.profile_pic else None
+        customer_data.append({
+            'customer': customer,
+            'profile_pic_url': profile_pic_url,
+        })
+    
+    context = {
+        'customers': customer_data,
+    }
+    return render(request, 'ecom/view_customer.html', context)
 
 # admin delete customer
 @login_required(login_url='adminlogin')
@@ -565,3 +579,6 @@ def create(request):
 
 def home(request):
     return render(request, 'ecom/home.html')
+
+def manage_profile(request):
+    return render(request, 'ecom/manage_profile.html')
