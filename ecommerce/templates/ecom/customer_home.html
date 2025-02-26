@@ -2,10 +2,8 @@
 {% load static %}
 {% block content %}
 
-
-
-  <style media="screen">
-    body,
+<style media="screen">
+  body,
 html {
   height: 100%;
 }
@@ -380,7 +378,7 @@ img {
 .slide-3 {
   background-image: url("{% static 'images/banner3.jpg' %}");
 }
-  </style>
+</style>
 
 <div class="row">
   <div class="col-md-12">
@@ -404,7 +402,7 @@ img {
 </div>
 
 
-  {%if products%}
+{% if products %}
   <h3 style="text-align:center; color:#3E454C;">{{word}}</h3>
   <br>
   
@@ -446,37 +444,31 @@ img {
         </div>
       </div>
       </div>
-<!-- card1 end -->
-{% if forloop.counter|divisibleby:"3" %}
-    </div>
-    <div class="row">
+      <!-- card1 end -->
+      {% if forloop.counter|divisibleby:"3" %}
+        </div>
+        <div class="row">
           <br><br><br><br><br>
+      {% endif %}
+      {% endfor %}
+  </div>
+  <!-- products data end -->
+{% else %}
+  <h3 style="text-align:center; color:#3E454C;">No Search Found</h3>
 {% endif %}
 
-  {% endfor %}
-</div>
-<!-- products data end -->
-
-
-{%else%}
-<h3 style="text-align:center; color:#3E454C;">No Search Found</h3>
-{%endif%}
-
 <script>
-    {%if messages %}
-    {%for message in messages%}
-    alert('{{message}}');
-    {%endfor%}
-    {%endif%}
+    {% if messages %}
+    {% for message in messages %}
+    alert('{{ message }}');
+    {% endfor %}
+    {% endif %}
 </script>
 <br><br><br>
 <br><br><br><br><br><br><br><br><br><br><br><br>
 
-
 <!--
 developed By : sumit kumar
 -->
-
-
 
 {% endblock content %}
