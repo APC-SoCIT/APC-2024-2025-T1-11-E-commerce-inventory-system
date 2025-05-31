@@ -368,6 +368,7 @@
         {% endfor %}
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 $(document).ready(function() {
     $('select[id^="cancelReason"]').change(function() {
@@ -379,6 +380,46 @@ $(document).ready(function() {
         } else {
             otherReasonField.hide().prop('required', false);
         }
+    });
+
+    // Intercept the cancel order form submission to use AJAX
+    $('form').submit(function(event) {
+        var form = $(this);
+        var url = form.attr('action');
+        if (!url.includes('cancel-order')) {
+            return true; // allow other forms to submit normally
+        }
+        event.preventDefault();
+        var orderId = url.match(/cancel-order\/(\d+)/)[1];
+        var cancelReason = form.find('select[name="cancel_reason"]').val();
+        var otherReason = form.find('textarea[name="other_reason"]').val();
+
+        // Prepare data to send
+        var data = {
+            'cancel_reason': cancelReason,
+            'other_reason': otherReason,
+            'csrfmiddlewaretoken': form.find('input[name="csrfmiddlewaretoken"]').val()
+        };
+
+        $.post(url, data, function(response) {
+            if (response.success) {
+                // Show notification
+                alert(response.message); // Replace with your notification system if any
+
+                // Update the order status label and move the order card to Cancelled section
+                var card = form.closest('.card');
+                card.find('span.label').removeClass().addClass('label label-danger').text('Cancelled');
+                card.find('.track').html('<div class="step active"> <span class="icon"> <i style="padding-top:.2em; padding-right:.5em;" class="fa fa-times"></i> </span> <span class="text" style="color: #dc3545;">Order Cancelled</span> </div><div class="step"> <span class="icon"> <i style="padding-top:.2em; padding-right:.5em;" class="fa fa-check"></i> </span> <span class="text"> Order Confirmed</span> </div><div class="step"> <span class="icon"> <i style="padding-top:.2em; padding-right:.5em;" class="fa fa-truck"></i> </span> <span class="text"> On the way </span> </div><div class="step"> <span class="icon"> <i style="padding-top:.2em; padding-right:.5em;" class="fa fa-shopping-bag"></i> </span> <span class="text">Delivered</span> </div>');
+
+                // Move the card to Cancelled section
+                $('.order-section').has('h3.section-header:contains("Cancelled")').append(card);
+
+                // Close the modal
+                form.closest('.modal').modal('hide');
+            } else {
+                alert(response.message);
+            }
+        });
     });
 });
 </script>

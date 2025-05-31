@@ -635,6 +635,8 @@ def payment_success_view(request):
                     product_id = parts[1]
                     product_ids_only.add(product_id)
             products = models.Product.objects.filter(id__in=product_ids_only)
+    else:
+        products = []
 
     # Check if the PayPal response contains address and contact details
     if 'email' in request.COOKIES:
@@ -704,15 +706,23 @@ def place_order(request):
     print('Invalid request method')
     return JsonResponse({'message': 'Invalid request method'})
 
+from django.http import JsonResponse
+
 def cancel_order_view(request, order_id):
-    order = Orders.objects.get(id=order_id)
-    if order.status == 'Pending':
-        order.status = 'Cancelled'
-        order.save()
-        messages.success(request, 'Order cancelled successfully!')
+    if request.method == 'POST':
+        try:
+            order = Orders.objects.get(id=order_id)
+            if order.status == 'Pending':
+                order.status = 'Cancelled'
+                order.save()
+                # Return success with updated order status for frontend to reflect
+                return JsonResponse({'success': True, 'message': 'Order cancelled successfully!', 'order_status': 'Cancelled'})
+            else:
+                return JsonResponse({'success': False, 'message': 'Order cannot be cancelled at this time.'})
+        except Orders.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Order not found.'})
     else:
-        messages.error(request, 'Order cannot be cancelled at this time.')
-    return redirect('home')
+        return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
 
 
@@ -871,6 +881,45 @@ def create_gcash_payment(request):
         "Content-Type": "application/json"
     }
 
+    # Extract product details from cookies or session (example using cookies)
+    product_ids = request.COOKIES.get('product_ids', '')
+    if not product_ids:
+        return JsonResponse({"error": "No products in cart"}, status=400)
+
+    product_keys = product_ids.split('|')
+    product_details = []
+    total_amount = 0
+
+    # Use a list to preserve order of products as in cart
+    for key in product_keys:
+        cookie_key = f"{key}_details"
+        if cookie_key in request.COOKIES:
+            details = request.COOKIES[cookie_key].split(':')
+            if len(details) == 2:
+                size = details[0]
+                quantity = int(details[1])
+                # Extract product id from key format: product_{id}_{size}
+                parts = key.split('_')
+                if len(parts) >= 2:
+                    product_id = parts[1]
+                    try:
+                        product = models.Product.objects.get(id=product_id)
+                        # Ensure product.price is decimal or float, convert to int cents properly
+                        unit_price_cents = int(round(float(product.price) * 100))
+                        total_amount += unit_price_cents * quantity
+                        print(f"DEBUG: Product: {product.name}, Unit Price: {product.price}, Quantity: {quantity}, Amount (cents): {unit_price_cents * quantity}")
+                        product_details.append({
+                            "currency": "PHP",
+                            "amount": unit_price_cents,
+                            "name": f"{product.name} (Size: {size})",
+                            "quantity": quantity
+                        })
+                    except models.Product.DoesNotExist:
+                        continue
+
+    if not product_details:
+        return JsonResponse({"error": "No valid products found"}, status=400)
+
     payload = {
         "data": {
             "attributes": {
@@ -881,14 +930,9 @@ def create_gcash_payment(request):
                 },
                 "send_email_receipt": False,
                 "show_line_items": True,
-                "line_items": [{
-                    "currency": "PHP",
-                    "amount": 10000,  # = PHP 100.00
-                    "name": "GearCraft Jersey",
-                    "quantity": 1
-                }],
+                "line_items": product_details,
                 "payment_method_types": ["gcash"],
-                "description": "GCash Payment for Jersey",
+                "description": f"GCash Payment for {len(product_details)} item(s)",
                 "success_url": "http://127.0.0.1:8000/payment-success/",
                 "cancel_url": "http://127.0.0.1:8000/payment-cancel/"
             }
@@ -903,11 +947,3 @@ def create_gcash_payment(request):
         return redirect(checkout_url)
     except KeyError:
         return JsonResponse({"error": "Payment creation failed", "details": data}, status=400)
-
-    from django.http import HttpResponse
-
-    def payment_success(request):
-        return HttpResponse("✅ Payment successful! Thank you.")
-
-    def payment_cancel(request):
-        return HttpResponse("❌ Payment canceled.")

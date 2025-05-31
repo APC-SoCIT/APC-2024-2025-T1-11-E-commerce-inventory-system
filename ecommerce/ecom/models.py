@@ -82,6 +82,7 @@ class Orders(models.Model):
     status = models.CharField(max_length=50,null=True,choices=STATUS)
     size = models.CharField(max_length=20)
     quantity = models.IntegerField(default=1)
+    order_group_id = models.CharField(max_length=100, null=True, blank=True)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Orders, on_delete=models.CASCADE)
