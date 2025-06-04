@@ -1109,26 +1109,37 @@ def render_to_pdf(template_src, context_dict):
 
 
 def download_invoice_view(request, orderID):
+    from datetime import timedelta
+
     order = models.Orders.objects.get(id=orderID)
     order_items = models.OrderItem.objects.filter(order=order)
+    customer = order.customer
 
-    # Use the stored shipment address from the order
-    shipment_address = order.address if order.address else order.customer.address
+    from decimal import Decimal
 
-    # Calculate total price for the whole order
-    total_price = 0
-    for item in order_items:
-        total_price += item.price * item.quantity
+    # Calculate subtotal
+    subtotal = sum(item.price * item.quantity for item in order_items)
+    discount = Decimal('0.00')  # Assuming no discount
+    tax = subtotal * Decimal('0.12')  # 12% tax
+    total = subtotal + tax - discount
+
+    # Calculate due date (order_date + 30 days)
+    due_date = order.order_date + timedelta(days=30) if order.order_date else None
 
     mydict = {
+        'order': order,
         'orderDate': order.order_date,
-        'customerName': request.user,
-        'customerEmail': order.email,
-        'customerMobile': order.mobile,
-        'shipmentAddress': shipment_address,  # Ensure this is used
+        'dueDate': due_date,
+        'customerName': customer.user.get_full_name() or customer.user.username,
+        'customerEmail': customer.user.email,
+        'customer': customer,
         'orderStatus': order.status,
         'orderItems': order_items,
-        'totalPrice': total_price,
+        'subtotal': subtotal,
+        'discount': discount,
+        'tax': tax,
+        'total': total,
+        'invoiceNumber': order.id,
     }
     return render_to_pdf('ecom/download_invoice.html', mydict)
 

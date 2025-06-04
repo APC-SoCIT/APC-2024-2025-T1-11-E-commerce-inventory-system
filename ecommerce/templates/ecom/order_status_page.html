@@ -138,7 +138,7 @@
                                 <p class="mb-1">Contact: {{ order_dict.order.mobile }}</p>
                                 {% endif %}
                                 {% if order_dict.order.estimated_delivery_date %}
-                                <p class="mb-0">Estimated Delivery: {{ order_dict.order.estimated_delivery_date|date:"M d, Y" }}</p>
+                                <p class="mb-0">Ordered on {{ order.created_at|date:"M d, Y" }}</p>
                                 {% endif %}
                                 {% if order_dict.order.status == 'Pending' %}
                                 <a class="btn btn-primary btn-sm rounded-0" style="text-decoration:none;" href="{% url 'download-invoice' order_dict.order.id %}" target="_blank"><i class="fa fa-download " style="font-size: 12px;height:auto"></i> Download Invoice</a>
