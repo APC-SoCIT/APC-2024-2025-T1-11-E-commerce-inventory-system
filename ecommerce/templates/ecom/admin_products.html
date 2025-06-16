@@ -63,7 +63,7 @@
                             <td class="px-6 py-4 whitespace-nowrap align-middle text-left">
                                 <div class="text-sm text-gray-900">₱{{ product.price|intcomma }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap align-middle text-center">
+                            <td class="px-7 py-5 whitespace-nowrap align-center text-center">
                                 <div class="flex flex-col items-center justify-center text-sm text-gray-900" style="min-width: 60px; line-height: 1.2;">
                                     <span>{{ product.quantity }}</span>
                                     {% if product.quantity == 0 %}
@@ -169,24 +169,12 @@
                                 <textarea id="productDescription" name="description" rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required></textarea>
                             </div>
                             
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                        <!-- Category selection removed as per user request -->
-                        <!-- <select id="productCategory" name="category" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select Category</option>
-                            <option value="clothing">Clothing</option>
-                            <option value="accessories">Accessories</option>
-                            <option value="footwear">Footwear</option>
-                            <option value="safety">Safety Equipment</option>
-                            <option value="electronics">Electronics</option>
-                            <option value="tools">Tools</option>
-                        </select> -->
-                            </div>
+                            
                         </div>
                         
                         <div class="space-y-4">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Price (ZAR) *</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Price*</label>
                                 <input type="number" id="productPrice" name="price" step="0.01" min="0" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
                             </div>
                             
@@ -211,7 +199,7 @@
                             
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Product Image</label>
-<input type="file" id="productImage" name="product_image" accept="image/*" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <input type="file" id="productImage" name="product_image" accept="image/*" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <div id="imagePreview" class="mt-2 hidden">
                                     <img id="previewImg" src="/placeholder.svg" alt="Preview" class="w-32 h-32 object-cover rounded-md border">
                                     <button type="button" onclick="removeImagePreview()" class="mt-2 text-red-600 text-sm hover:text-red-800">Remove Image</button>
@@ -255,11 +243,6 @@
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <!-- Category label and value removed as per user request -->
-                                    <!-- <label class="text-sm font-medium text-gray-500">Category</label>
-                                    <p id="viewProductCategory" class="text-gray-900 capitalize"></p> -->
-                                </div>
-                                <div>
                                     <label class="text-sm font-medium text-gray-500">Size</label>
                                     <p id="viewProductSize" class="text-gray-900"></p>
                                 </div>
@@ -268,7 +251,7 @@
                     </div>
                     
                     <div class="space-y-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="bg-blue-50 p-2 rounded-lg">
                             <label class="text-sm font-medium text-gray-500">Price</label>
                             <p id="viewProductPrice" class="text-2xl font-bold text-blue-600"></p>
                         </div>

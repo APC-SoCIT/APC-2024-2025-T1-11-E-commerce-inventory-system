@@ -49,18 +49,30 @@
             <a href="{% url 'admin-view-users' %}" class="nav-item {% if request.resolver_match.url_name == 'admin-view-users' or request.resolver_match.url_name == 'user_profile_page' %}bg-blue-50 text-blue-700{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 <i data-lucide="users" class="mr-3 h-5 w-5"></i>
                 Users
+                {% if sidebar_counts.users %}
+                <span class="ml-auto inline-block py-0.5 px-3 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">{{ sidebar_counts.users }}</span>
+                {% endif %}
             </a>
             <a href="{% url 'admin-view-booking' %}" class="nav-item {% if request.resolver_match.url_name == 'admin-view-booking' or request.resolver_match.url_name == 'admin-view-processing-orders' or request.resolver_match.url_name == 'admin-view-confirmed-orders' or request.resolver_match.url_name == 'admin-view-shipping-orders' or request.resolver_match.url_name == 'admin-view-delivered-orders' or request.resolver_match.url_name == 'admin-view-cancelled-orders' %}bg-blue-50 text-blue-700{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 <i data-lucide="shopping-cart" class="mr-3 h-5 w-5"></i>
                 Orders
+                {% if sidebar_counts.orders %}
+                <span class="ml-auto inline-block py-0.5 px-3 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">{{ sidebar_counts.orders }}</span>
+                {% endif %}
             </a>
             <a href="{% url 'admin-products' %}" class="nav-item {% if request.resolver_match.url_name == 'admin-products' %}bg-blue-50 text-blue-700{% else %}text-gray-600 hover:bg-gray-50 hover:text-gray-900{% endif %} group flex items-center px-2 py-2 text-sm font-medium rounded-md">
                 <i data-lucide="shirt" class="mr-3 h-5 w-5"></i>
                 Products
+                {% if sidebar_counts.products %}
+                <span class="ml-auto inline-block py-0.5 px-3 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">{{ sidebar_counts.products }}</span>
+                {% endif %}
             </a>
-            <a href="#" class="nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
-                <i data-lucide="bar-chart-3" class="mr-3 h-5 w-5"></i>
-                Analytics
+            <a href="{% url 'admin-manage-inventory' %}" class="nav-item text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-2 py-2 text-sm font-medium rounded-md">
+                <i data-lucide="package" class="mr-3 h-5 w-5"></i>
+                Inventory
+                {% if sidebar_counts.inventory %}
+                <span class="ml-auto inline-block py-0.5 px-3 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">{{ sidebar_counts.inventory }}</span>
+                {% endif %}
             </a>
         </nav>
         

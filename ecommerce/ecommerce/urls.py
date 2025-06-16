@@ -3,7 +3,7 @@ from django.urls import path
 from ecom import views
 from django.contrib.auth.views import LoginView,LogoutView
 from django.views.generic import RedirectView
-from ecom.views import manage_inventory, update_stock 
+from ecom.views import manage_inventory, update_stock, admin_manage_inventory_view
 from ecom.views import delete_inventory, edit_inventory, bulk_update_orders
 from django.conf import settings
 from django.conf.urls.static import static
@@ -15,6 +15,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('manage-inventory', manage_inventory, name='manage-inventory'),
     path('update-stock/<int:item_id>/', update_stock, name='update-stock'),
+    path('admin-manage-inventory/', admin_manage_inventory_view, name='admin-manage-inventory'),
     path('',views.home_view,name=''),
     path('afterlogin', views.afterlogin_view,name='afterlogin'),
     path('logout/', LogoutView.as_view(template_name='ecom/logout.html', next_page='customerlogin'), name='logout'),
@@ -60,6 +61,7 @@ urlpatterns = [
     path('admin-view-cancelled-orders', views.admin_view_cancelled_orders, name='admin-view-cancelled-orders'),
     path('delete-order/<int:pk>', views.delete_order_view,name='delete-order'),
     path('update-order/<int:pk>', views.update_order_view,name='update-order'),
+    path('admin/order-detail/<int:order_id>/', views.admin_order_detail_api, name='admin-order-detail-api'),
 
 
     path('customersignup', views.customer_signup_view),

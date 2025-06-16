@@ -44,12 +44,10 @@ class ProductForm(forms.ModelForm):
         quantity = cleaned_data.get('quantity')
 
         if self.product_instance:
-            # Check if size exists for this product
-            from .models import ProductSize
-            if size:
-                exists = ProductSize.objects.filter(product=self.product_instance, size=size).exists()
-                if not exists and (quantity is None or quantity == 0):
-                    self.add_error('quantity', 'Quantity is required when adding a new size.')
+            # Removed import and check for ProductSize as it does not exist
+            # Instead, just ensure quantity is provided when size is changed
+            if size and (quantity is None or quantity == 0):
+                self.add_error('quantity', 'Quantity is required when adding or updating a size.')
         else:
             if quantity is None or quantity == 0:
                 self.add_error('quantity', 'Quantity is required.')

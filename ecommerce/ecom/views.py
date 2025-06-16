@@ -9,13 +9,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.conf import settings
 from django.utils import timezone
-from .models import Customer
+from .models import Customer, CartItem, OrderItem, Product, InventoryItem, Orders
 from django.urls import reverse
 from .forms import InventoryForm
 from .forms import CustomerLoginForm
-from .models import Product
-from .models import InventoryItem
-from .models import Orders
 from django.views.decorators.csrf import csrf_exempt
 import requests
 import json
@@ -159,6 +156,42 @@ def adminclick_view(request):
     if request.user.is_authenticated:
         return HttpResponseRedirect('afterlogin')
     return HttpResponseRedirect('adminlogin')
+
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
+
+@login_required(login_url='adminlogin')
+def admin_manage_inventory_view(request):
+    if request.method == "POST":
+        form = InventoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('admin-manage-inventory')
+    else:
+        form = InventoryForm()
+
+    inventory_items = models.InventoryItem.objects.all()
+
+    total_items = inventory_items.count()
+    from django.db.models import F
+    # The field is named 'low_stock_threshold' in the form, but in the model it seems to be 'description' or missing
+    # From error, low_stock_threshold is not a field in InventoryItem model
+    # So we will treat low_stock_threshold as a constant threshold, e.g., 10
+    LOW_STOCK_THRESHOLD = 10
+    low_stock_items = inventory_items.filter(quantity__lte=LOW_STOCK_THRESHOLD, quantity__gt=0).count()
+    out_of_stock_items = inventory_items.filter(quantity=0).count()
+    from django.db.models import Sum
+    total_stock = inventory_items.aggregate(total=Sum('quantity'))['total'] or 0
+
+    return render(request, 'ecom/admin_manage_inventory.html', {
+        'inventory_items': inventory_items,
+        'form': form,
+        'total_items': total_items,
+        'low_stock_items': low_stock_items,
+        'out_of_stock_items': out_of_stock_items,
+        'total_stock': total_stock,
+    })
 
 
 def customer_signup_view(request):
@@ -559,17 +592,23 @@ def update_product_view(request, pk):
                 # Check if product with same name and new size exists
                 try:
                     existing_product = models.Product.objects.get(name=product_name, size=new_size)
-                    # Update existing product
+                    # Update existing product by adding quantity instead of replacing
                     existing_product.description = productForm.cleaned_data.get('description')
                     existing_product.price = productForm.cleaned_data.get('price')
-                    existing_product.quantity = productForm.cleaned_data.get('quantity')
+                    new_quantity = productForm.cleaned_data.get('quantity') or 0
+                    existing_product.quantity = (existing_product.quantity or 0) + new_quantity
                     if 'product_image' in request.FILES:
                         existing_product.product_image = request.FILES['product_image']
                     existing_product.save()
+                    # Do not delete the old product; just update existing product
+                    # Optionally, you can update the old product's quantity to 0 or handle as needed
                 except models.Product.DoesNotExist:
                     # Create new product with new size
                     new_product = productForm.save(commit=False)
                     new_product.id = None  # Ensure new object
+                    new_product.size = new_size  # Set the new size explicitly
+                    # Set quantity explicitly from form cleaned data
+                    new_product.quantity = productForm.cleaned_data.get('quantity') or 0
                     new_product.save()
             else:
                 # Size same, update current product
@@ -584,6 +623,9 @@ def update_product_view(request, pk):
 def admin_view_booking_view(request):
     return redirect('admin-view-processing-orders')
 
+from django.utils import timezone
+from datetime import timedelta
+
 def get_order_status_counts():
     counts = {
         'processing': models.Orders.objects.filter(status__in=['Pending', 'Processing']).count(),
@@ -593,6 +635,17 @@ def get_order_status_counts():
         'cancelled': models.Orders.objects.filter(status='Cancelled').count(),
     }
     return counts
+
+def get_order_status_changes():
+    yesterday = timezone.now() - timedelta(days=1)
+    changes = {
+        'processing': models.Orders.objects.filter(status__in=['Pending', 'Processing'], created_at__gte=yesterday).count(),
+        'confirmed': models.Orders.objects.filter(status='Order Confirmed', created_at__gte=yesterday).count(),
+        'shipping': models.Orders.objects.filter(status='Out for Delivery', created_at__gte=yesterday).count(),
+        'delivered': models.Orders.objects.filter(status='Delivered', created_at__gte=yesterday).count(),
+        'cancelled': models.Orders.objects.filter(status='Cancelled', created_at__gte=yesterday).count(),
+    }
+    return changes
 
 @login_required(login_url='adminlogin')
 def admin_view_processing_orders(request):
@@ -658,6 +711,34 @@ def admin_view_cancelled_orders(request):
         'delivered_count': counts.get('delivered', 0),
     }
     return prepare_admin_order_view(request, orders, 'Cancelled', 'ecom/admin_view_orders.html', extra_context=context)
+
+@login_required(login_url='adminlogin')
+def admin_order_detail_api(request, order_id):
+    import json
+    from django.template.loader import render_to_string
+    import logging
+    user = request.user
+    logging.info(f"admin_order_detail_api called by user: {user} with order_id: {order_id}")
+    if not user.is_authenticated:
+        logging.warning("Unauthorized access attempt to admin_order_detail_api")
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=401)
+    try:
+        order = models.Orders.objects.get(id=order_id)
+        order_items = models.OrderItem.objects.filter(order=order)
+        customer = order.customer
+        context = {
+            'order': order,
+            'order_items': order_items,
+            'customer': customer,
+        }
+        html = render_to_string('ecom/admin_order_detail.html', context, request=request)
+        return JsonResponse({'success': True, 'html': html})
+    except models.Orders.DoesNotExist:
+        logging.warning(f"Order not found: {order_id}")
+        return JsonResponse({'success': False, 'error': 'Order not found'}, status=404)
+    except Exception as e:
+        logging.error(f"Error in admin_order_detail_api: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Internal server error'}, status=500)
 
 
 def prepare_admin_order_view(request, orders, status, template, extra_context=None):
@@ -986,7 +1067,7 @@ def cancelled_orders_view(request):
 
 def cart_page(request):
     user = request.user
-    cart_items = Cart.objects.filter(user=user)
+    cart_items = CartItem.objects.filter(user=user)
     
     # Check if cart is empty
     if not cart_items.exists():
@@ -1002,12 +1083,12 @@ def cart_page(request):
     except Customer.DoesNotExist:
         return HttpResponse("Invalid Customer ID")
 
-    cart_items = Cart.objects.filter(user=user)
+    cart_items = CartItem.objects.filter(user=user)
 
     # Check if the payment was made with PayPal
     if paypal_transaction_id:
         for cart in cart_items:
-            OrderPlaced.objects.create(
+            OrderItem.objects.create(
                 user=user,
                 customer=customer,
                 product=cart.product,
